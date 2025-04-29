@@ -1,0 +1,17 @@
+version: '2'
+
+services: 
+  video_tag:
+    image: u03013112/video_tag:v1
+    container_name: 'video_tag'
+    tty: true
+    volumes:
+      - ../:/src:cached
+    working_dir: /src/
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+  

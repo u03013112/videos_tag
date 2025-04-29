@@ -1,0 +1,23 @@
+# Use the official Python 3.11 slim image as a base
+FROM python:3.11-slim-bullseye
+
+# Set environment variables to prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libopencv-dev \
+    python3-opencv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir opencv-python-headless scikit-learn
+
+# Optionally, you can add your application code here
+# COPY . /app
+# WORKDIR /app
+
+# Optionally, set the command to run your application
+# CMD ["python", "your_script.py"]
