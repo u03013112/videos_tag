@@ -27,6 +27,7 @@ select
 from rg_bi.dws_material_overseas_data_public
 where
     app = '502'
+    and material_type = '视频'
     and install_day between {installDayStartStr} and {installDayEndStr}
     and earliest_day between {earliestDayStartStr} and {earliestDayEndStr}
     and mediasource in ({','.join(f"'{source}'" for source in mediasourceList)})
@@ -76,7 +77,11 @@ def main(dayStr = None):
 
     weekDf = getDataFromMaxCompute(mondayStr, sundayStr, lastMondayStr, lastSundayStr)
     
-    weekDf.to_csv(f'/src/data/csv/{mondayStr}.csv', index=False)
+    csvDir = '/src/data/csv/raw'
+    if not os.path.exists(csvDir):
+        os.makedirs(csvDir)
+
+    weekDf.to_csv(f'{csvDir}/{mondayStr}.csv', index=False)
 
 # 历史数据补充，如果有需要补充的历史数据，调佣这个函数，并且调整时间范围
 def historyData():
@@ -95,6 +100,8 @@ def historyData():
 
 if __name__ == '__main__':
     historyData()
+
+    # main()
     
 
 

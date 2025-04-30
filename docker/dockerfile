@@ -10,10 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libopencv-dev \
     python3-opencv \
+    curl \
+    fonts-wqy-zenhei \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-RUN pip install --no-cache-dir opencv-python-headless scikit-learn
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r /tmp/requirements.txt \
+    && rm /tmp/requirements.txt
 
 # Optionally, you can add your application code here
 # COPY . /app

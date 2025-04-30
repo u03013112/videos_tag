@@ -1,2 +1,5 @@
+opencv-python-headless
+scikit-learn
 pandas
 odps
+matplotlib
