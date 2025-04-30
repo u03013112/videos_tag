@@ -139,8 +139,6 @@ def fit_predict_cost_with_decision_tree(data):
     testDf.loc[:, 'predicted_class'] = (probabilities[:, 1] >= threshold).astype(int)
     testDf.loc[:, 'probabilities'] = probabilities[:, 1]
     testDf.loc[:, 'y_test'] = y_test
-    print('testDf:')
-    print(testDf)
     
     # 计算查准率和查全率
     precision = precision_score(y_test, testDf['predicted_class'])
@@ -149,11 +147,29 @@ def fit_predict_cost_with_decision_tree(data):
     # 计算 R2
     r2 = r2_score(y_test, testDf['predicted_class'])
 
+    # 获取训练集预测概率
+    train_probabilities = model.predict_proba(X_train)
+    # 使用与测试集相同的阈值
+    trainDf.loc[:, 'predicted_class'] = (train_probabilities[:, 1] >= threshold).astype(int)
+    trainDf.loc[:, 'probabilities'] = train_probabilities[:, 1]
+    trainDf.loc[:, 'y_train'] = y_train
+    
+    # 计算训练集的查准率和查全率
+    train_precision = precision_score(y_train, trainDf['predicted_class'])
+    train_recall = recall_score(y_train, trainDf['predicted_class'])
+    
+    # 计算训练集的 R2
+    train_r2 = r2_score(y_train, trainDf['predicted_class'])
+
     visualize_tree(model, color_features)
     
-    print('precision:', precision)
-    print('recall:', recall)
-    print('r2:', r2)
+    print('训练集 precision:', train_precision)
+    print('训练集 recall:', train_recall)
+    print('训练集 r2:', train_r2)
+    
+    print('测试集 precision:', precision)
+    print('测试集 recall:', recall)
+    print('测试集 r2:', r2)
 
     # return model, data, precision, recall, r2
 
