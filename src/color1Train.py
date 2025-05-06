@@ -9,6 +9,8 @@ import os
 import cv2
 import pandas as pd
 import numpy as np
+import datetime
+import joblib
 
 # 定义颜色范围
 color_ranges = {
@@ -84,7 +86,7 @@ def visualize_tree(model, feature_names):
 
 from sklearn.metrics import precision_score, recall_score, r2_score
 from sklearn.tree import DecisionTreeClassifier
-def fit_predict_cost_with_decision_tree(data):
+def fit_predict_cost_with_decision_tree(data,testWeeks=4):
     # 提取颜色比例特征
     color_features = data.columns[6:-1]  # 颜色比例特征列名
     print('color_features:')
@@ -98,8 +100,19 @@ def fit_predict_cost_with_decision_tree(data):
     print('共有', len(y), '条数据')
     print('畅销素材数量:', len(y[y == 1]))
     print('')
+
+    earliestDayList = data['earliest_day'].tolist()
+    earliestDayList = sorted(set(earliestDayList))
+    print('earliestDayList:', earliestDayList)
+    # 将最后testWeeks周的数据作为测试集
+    lastDayStr = earliestDayList[-1]
+    lastDay = datetime.datetime.strptime(lastDayStr, '%Y%m%d')
+    testStartDay = lastDay - datetime.timedelta(weeks=testWeeks)
+    testStartDayStr = testStartDay.strftime('%Y%m%d')
+    print('testStartDayStr:', testStartDayStr)
+
     # 将数据拆分成训练集和测试集，将earliest_day大于等于20250324的作为测试集
-    train_mask = data['earliest_day'] < '20250324'
+    train_mask = data['earliest_day'] <= testStartDayStr
 
     trainDf = data[train_mask].copy()
     testDf = data[~train_mask].copy()
@@ -120,7 +133,7 @@ def fit_predict_cost_with_decision_tree(data):
 
     # 初始化决策树分类模型
     model = DecisionTreeClassifier(
-        max_depth=2,
+        max_depth=3,
         # max_leaf_nodes=20  # 限制叶子节点的最大数量
     )
     
@@ -161,6 +174,14 @@ def fit_predict_cost_with_decision_tree(data):
     # 计算训练集的 R2
     train_r2 = r2_score(y_train, trainDf['predicted_class'])
 
+    # 保存模型至/src/data/models/
+    model_dir = '/src/data/models/'
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    model_path = os.path.join(model_dir, 'color1_decision_tree.pkl')
+    joblib.dump(model, model_path)
+    print(f'模型已保存至: {model_path}')
+
     visualize_tree(model, color_features)
     
     print('训练集 precision:', train_precision)
@@ -174,7 +195,7 @@ def fit_predict_cost_with_decision_tree(data):
     # return model, data, precision, recall, r2
 
 
-def main():
+def train():
 
     csvDir = '/src/data/csv/color1'
     if not os.path.exists(csvDir):
@@ -209,7 +230,81 @@ def main():
     
     fit_predict_cost_with_decision_tree(data)
     
+def main(dayStr = None):
+    if dayStr is None:
+        today = datetime.datetime.now()
+    else:
+        today = datetime.datetime.strptime(dayStr, '%Y%m%d')
 
+    # 如果不是周一，什么都不做
+    if today.weekday() != 0:
+        # print("今天不是周一，不执行数据准备。")
+        return
+    
+    print(dayStr)
+    monday = today - datetime.timedelta(days=7)
+    mondayStr = monday.strftime('%Y%m%d')
+
+    downloadCsvDir = '/src/data/csv/download'
+    filename = f'{downloadCsvDir}/{mondayStr}.csv'
+    if os.path.exists(filename):
+        videoInfoDf = pd.read_csv(filename)
+    else:
+        print(f"Error: {filename} does not exist.")
+        return
+    videoInfoDf = addTag(videoInfoDf)
+
+    # 读取模型
+    model_dir = '/src/data/models/'
+    model_path = os.path.join(model_dir, 'color1_decision_tree.pkl')
+    if os.path.exists(model_path):
+        model = joblib.load(model_path)
+    else:
+        print(f"Error: {model_path} does not exist.")
+        return
+
+    # 预测
+    color_features = videoInfoDf.columns[6:-1]  # 颜色比例特征列名
+    X = videoInfoDf[color_features]  # 输入特征
+    # 获取预测概率
+    probabilities = model.predict_proba(X)
+    
+    videoInfoDf.loc[:, 'probabilities'] = probabilities[:, 1]
+    videoInfoDf.loc[:, 'predicted_class'] = (probabilities[:, 1] >= 0.2).astype(int)
+    videoInfoDf.loc[:, 'y'] = 0
+    videoInfoDf.loc[videoInfoDf['cost'] > 3500, 'y'] = 1
+
+    # 将数据进行保存备份
+    csvDir = '/src/data/csv/color1'
+    if not os.path.exists(csvDir):
+        os.makedirs(csvDir)
+    videoInfoDf.to_csv(f'{csvDir}/{mondayStr}.csv', index=False)
+    print(f"结论文件保存在 /src/data/csv/color1/{mondayStr}.csv")
+
+    # 计算查准率和查全率
+    precision = precision_score(videoInfoDf['y'], videoInfoDf['predicted_class'])
+    recall = recall_score(videoInfoDf['y'], videoInfoDf['predicted_class'])
+    # 计算 R2
+    r2 = r2_score(videoInfoDf['y'], videoInfoDf['predicted_class'])
+    print('查准率:', precision)
+    print('查全率:', recall)
+    print('R2:', r2)
+
+# 历史数据补充，如果有需要补充的历史数据，调佣这个函数，并且调整时间范围
+def historyData():
+    startDayStr = '20250101'
+    endDayStr = '20250430'
+
+    startDay = datetime.datetime.strptime(startDayStr, '%Y%m%d')
+    endDay = datetime.datetime.strptime(endDayStr, '%Y%m%d')
+
+    for i in range((endDay - startDay).days + 1):
+        day = startDay + datetime.timedelta(days=i)
+        dayStr = day.strftime('%Y%m%d')
+        # print(dayStr)
+        main(dayStr)
 
 if __name__ == '__main__':
-    main()
+    # train()
+    historyData()
+    # main()

@@ -119,9 +119,9 @@ def historyData():
         main(dayStr)
 
 if __name__ == '__main__':
-    historyData()
+    # historyData()
 
-    # main('20250106')
+    main('20250106')
     
 
 
