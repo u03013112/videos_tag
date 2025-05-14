@@ -126,8 +126,9 @@ def fit_predict_cost_with_decision_tree(data,testWeeks=4):
 
     print('训练集数量:', len(X_train))
     print('训练集中畅销素材数量:', len(y_train[y_train == 1]))
-    print('测试集数量:', len(X_test))
-    print('测试集中畅销素材数量:', len(y_test[y_test == 1]))
+
+    # print('测试集数量:', len(X_test))
+    # print('测试集中畅销素材数量:', len(y_test[y_test == 1]))
 
     
 
@@ -192,6 +193,50 @@ def fit_predict_cost_with_decision_tree(data,testWeeks=4):
     print('测试集 recall:', recall)
     print('测试集 r2:', r2)
 
+    # 计算训练集中预测为畅销素材的数量
+    predicted_hot_count = len(trainDf[trainDf['predicted_class'] == 1])
+    print('训练集中预测为畅销素材的数量:', predicted_hot_count)
+    
+    # 计算训练集中预测为畅销素材并且真的畅销素材的数量
+    true_predicted_hot_count = len(trainDf[(trainDf['predicted_class'] == 1) & (y_train == 1)])
+    print('训练集中预测为畅销素材并且真的畅销素材的数量:', true_predicted_hot_count)
+    # 计算训练集中预测为不畅销素材的数量
+    predicted_not_hot_count = len(trainDf[trainDf['predicted_class'] == 0])
+    print('训练集中预测为不畅销素材的数量:', predicted_not_hot_count)
+    
+    # 计算训练集中预测为不畅销但是真实畅销素材的数量
+    true_predicted_not_hot_count = len(trainDf[(trainDf['predicted_class'] == 0) & (y_train == 1)])
+    print('训练集中预测为不畅销但是真实畅销素材的数量:', true_predicted_not_hot_count)
+    
+    # 计算训练集中预测为畅销素材的准确率
+    accuracy1 = true_predicted_hot_count / predicted_hot_count if predicted_hot_count > 0 else 0
+    print('训练集中预测为畅销素材的准确率:', accuracy1)
+    # 计算训练集中预测为不畅销素材的准确率
+    accuracy2 = true_predicted_not_hot_count / predicted_not_hot_count if predicted_not_hot_count > 0 else 0
+    print('训练集中预测为不畅销素材的准确率:', accuracy2)
+
+    print('训练集中预测为畅销素材准确率/不畅销素材准确率:', accuracy1 / accuracy2)
+
+    # 计算测试集中预测为畅销素材的数量
+    predicted_hot_count = len(testDf[testDf['predicted_class'] == 1])
+    print('测试集中预测为畅销素材的数量:', predicted_hot_count)
+    # 计算测试集中预测为畅销素材并且真的畅销素材的数量
+    true_predicted_hot_count = len(testDf[(testDf['predicted_class'] == 1) & (y_test == 1)])
+    print('测试集中预测为畅销素材并且真的畅销素材的数量:', true_predicted_hot_count)
+    # 计算测试集中预测为不畅销素材的数量
+    predicted_not_hot_count = len(testDf[testDf['predicted_class'] == 0])
+    print('测试集中预测为不畅销素材的数量:', predicted_not_hot_count)
+    # 计算测试集中预测为不畅销但是真实畅销素材的数量
+    true_predicted_not_hot_count = len(testDf[(testDf['predicted_class'] == 0) & (y_test == 1)])
+    print('测试集中预测为不畅销但是真实畅销素材的数量:', true_predicted_not_hot_count)
+    # 计算测试集中预测为畅销素材的准确率
+    accuracy1 = true_predicted_hot_count / predicted_hot_count if predicted_hot_count > 0 else 0
+    print('测试集中预测为畅销素材的准确率:', accuracy1)
+    # 计算测试集中预测为不畅销素材的准确率
+    accuracy2 = true_predicted_not_hot_count / predicted_not_hot_count if predicted_not_hot_count > 0 else 0
+    print('测试集中预测为不畅销素材的准确率:', accuracy2)
+    print('测试集中预测为畅销素材准确率/不畅销素材准确率:', accuracy1 / accuracy2)
+    
     # return model, data, precision, recall, r2
 
 
@@ -238,7 +283,7 @@ def main(dayStr = None):
 
     # 如果不是周一，什么都不做
     if today.weekday() != 0:
-        # print("今天不是周一，不执行数据准备。")
+        print("今天不是周一，不执行数据准备。")
         return
     
     print(dayStr)
@@ -305,6 +350,6 @@ def historyData():
         main(dayStr)
 
 if __name__ == '__main__':
-    # train()
-    historyData()
-    # main()
+    train()
+    # historyData()
+    # main('20250428')
