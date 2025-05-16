@@ -99,8 +99,8 @@ def get_hsl_color_ranges_for_test():
 
 def color_check(color_ranges):
     # 图像的宽度和每个颜色条的高度
-    img_width = 100
-    bar_height = 5
+    img_width = 500
+    bar_height = 10
     
     # 计算图像的总高度
     img_height = len(color_ranges) * bar_height
@@ -210,10 +210,13 @@ from sklearn.tree import DecisionTreeClassifier
 def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
     # 提取颜色比例特征
     color_features = list(color_ranges.keys())
-    print('color_features:')
-    print(color_features)
+    # print('color_features:')
+    # print(color_features)
 
     X = data[color_features]  # 输入特征
+
+    # X *= 100
+    # X = X.round(4)
 
     y = np.zeros(data.shape[0])
     y[data['cost'] > 3500] = 1
@@ -256,9 +259,12 @@ def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
     # 初始化决策树分类模型
     model = DecisionTreeClassifier(
         max_depth=3,
+        random_state=42  # 固定随机种子
         # max_leaf_nodes=20  # 限制叶子节点的最大数量
     )
-    
+    # # 保存X_train
+    # X_train.to_csv('/src/data/X_train2.csv', index=False)
+
     # 拟合模型
     model.fit(X_train, y_train)
     
@@ -300,7 +306,7 @@ def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
     model_dir = '/src/data/models/'
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-    model_path = os.path.join(model_dir, 'color1_decision_tree.pkl')
+    model_path = os.path.join(model_dir, 'color2_decision_tree1.pkl')
     joblib.dump(model, model_path)
     print(f'模型已保存至: {model_path}')
 
@@ -336,7 +342,11 @@ def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
     accuracy2 = true_predicted_not_hot_count / predicted_not_hot_count if predicted_not_hot_count > 0 else 0
     print('训练集中预测为不畅销素材的准确率:', accuracy2)
 
-    print('训练集中预测为畅销素材准确率/不畅销素材准确率:', accuracy1 / accuracy2)
+    if accuracy2 > 0:
+        print('训练集中预测为畅销素材准确率/不畅销素材准确率:', accuracy1 / accuracy2)
+    else:
+        print('训练集中预测为畅销素材准确率/不畅销素材准确率: 不畅销素材没有预测到任何样本')
+    # print('训练集中预测为畅销素材准确率/不畅销素材准确率:', accuracy1 / accuracy2)
 
     # 计算测试集中预测为畅销素材的数量
     predicted_hot_count = len(testDf[testDf['predicted_class'] == 1])
@@ -367,7 +377,7 @@ def train(color_ranges):
     if not os.path.exists(csvDir):
         os.makedirs(csvDir)
 
-    filename = f'{csvDir}/videoWithColor2Tag.csv'
+    filename = f'{csvDir}/videoWithColor2Tag2.csv'
     if os.path.exists(filename):
         print('文件已存在，直接读取')
     else:
@@ -379,16 +389,17 @@ def train(color_ranges):
         
         df = pd.DataFrame()
 
-        for filename in downloadCsvFilenameList:
-            if filename.endswith('.csv'):
-                print('filename:', filename)
-                videoInfoDf = pd.read_csv(os.path.join(downloadCsvDir, filename))
+        for downloadCsvFilename in downloadCsvFilenameList:
+            if downloadCsvFilename.endswith('.csv'):
+                print('downloadCsvFilename:', downloadCsvFilename)
+                videoInfoDf = pd.read_csv(os.path.join(downloadCsvDir, downloadCsvFilename))
                 # print(videoInfoDf)
                 videoInfoDf = addTag(videoInfoDf,color_ranges)
                 
                 df = pd.concat([df, videoInfoDf], ignore_index=True)
 
         df.to_csv(filename, index=False)
+        print(f'文件已保存至: {filename}')
 
     # 读取数据
     data = pd.read_csv(filename, dtype={'earliest_day': str})
@@ -399,8 +410,8 @@ def train(color_ranges):
 
 
 if __name__ == "__main__":
-    color_ranges = get_hsl_color_ranges2()
-    print(color_ranges)
+    color_ranges = get_hsl_color_ranges()
+    # print(color_ranges)
     # color_check(color_ranges)
 
     train(color_ranges)
