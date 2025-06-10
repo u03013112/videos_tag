@@ -250,9 +250,11 @@ def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
 
     print('训练集数量:', len(X_train))
     print('训练集中畅销素材数量:', len(y_train[y_train == 1]))
+    print('训练集畅销率:', len(y_train[y_train == 1]) / len(y_train))
 
-    # print('测试集数量:', len(X_test))
-    # print('测试集中畅销素材数量:', len(y_test[y_test == 1]))
+    print('测试集数量:', len(X_test))
+    print('测试集中畅销素材数量:', len(y_test[y_test == 1]))
+    print('测试集畅销率:', len(y_test[y_test == 1]) / len(y_test))
 
     
 
@@ -312,13 +314,13 @@ def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
 
     visualize_tree(model, color_features)
     
-    print('训练集 precision:', train_precision)
-    print('训练集 recall:', train_recall)
-    print('训练集 r2:', train_r2)
+    # print('训练集 precision:', train_precision)
+    # print('训练集 recall:', train_recall)
+    # print('训练集 r2:', train_r2)
     
-    print('测试集 precision:', precision)
-    print('测试集 recall:', recall)
-    print('测试集 r2:', r2)
+    # print('测试集 precision:', precision)
+    # print('测试集 recall:', recall)
+    # print('测试集 r2:', r2)
 
     # 计算训练集中预测为畅销素材的数量
     predicted_hot_count = len(trainDf[trainDf['predicted_class'] == 1])
@@ -377,7 +379,7 @@ def train(color_ranges):
     if not os.path.exists(csvDir):
         os.makedirs(csvDir)
 
-    filename = f'{csvDir}/videoWithColor2Tag2.csv'
+    filename = f'{csvDir}/videoWithColor2Tag.csv'
     if os.path.exists(filename):
         print('文件已存在，直接读取')
     else:
@@ -410,7 +412,7 @@ def train(color_ranges):
 
 
 if __name__ == "__main__":
-    color_ranges = get_hsl_color_ranges()
+    color_ranges = get_hsl_color_ranges2()
     # print(color_ranges)
     # color_check(color_ranges)
 

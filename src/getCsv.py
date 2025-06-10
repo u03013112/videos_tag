@@ -85,8 +85,8 @@ def main(dayStr = None):
 
 # 历史数据补充，如果有需要补充的历史数据，调佣这个函数，并且调整时间范围
 def historyData():
-    startDayStr = '20250101'
-    endDayStr = '20250429'
+    startDayStr = '20250428'
+    endDayStr = '20250609'
 
     startDay = datetime.datetime.strptime(startDayStr, '%Y%m%d')
     endDay = datetime.datetime.strptime(endDayStr, '%Y%m%d')
@@ -99,9 +99,9 @@ def historyData():
 
 
 if __name__ == '__main__':
-    historyData()
+    # historyData()
 
-    # main()
+    main()
     
 
 
