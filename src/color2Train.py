@@ -314,13 +314,13 @@ def fit_predict_cost_with_decision_tree(data,color_ranges,testWeeks=4):
 
     visualize_tree(model, color_features)
     
-    # print('训练集 precision:', train_precision)
-    # print('训练集 recall:', train_recall)
-    # print('训练集 r2:', train_r2)
+    print('训练集 precision:', train_precision)
+    print('训练集 recall:', train_recall)
+    print('训练集 r2:', train_r2)
     
-    # print('测试集 precision:', precision)
-    # print('测试集 recall:', recall)
-    # print('测试集 r2:', r2)
+    print('测试集 precision:', precision)
+    print('测试集 recall:', recall)
+    print('测试集 r2:', r2)
 
     # 计算训练集中预测为畅销素材的数量
     predicted_hot_count = len(trainDf[trainDf['predicted_class'] == 1])
